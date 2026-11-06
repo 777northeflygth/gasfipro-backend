@@ -188,9 +188,9 @@ SOCIALACCOUNT_PROVIDERS = {
         'OAUTH_PKCE_ENABLED': True,
         'APPS': [
             {
-                'client_id': os.getenv('GOOGLE_CLIENT_ID', '129169394896-kbkqsaqoa29nkqek35pc315kb19eae1c.apps.googleusercontent.com'),
+                'client_id': os.getenv('GOOGLE_CLIENT_ID', ''),
                 # ✅ CORREGIDO: Se ha cambiado la 'y' por la 't' en el secreto
-                'secret': os.getenv('GOOGLE_CLIENT_SECRET', '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'),
+                'secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),
                 'key': '',
             },
         ],
