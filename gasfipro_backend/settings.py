@@ -18,7 +18,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ============================================================
 
 # Se lee de las variables de entorno. El fallback es solo para desarrollo local.
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-dev-only-key-do-not-use-in-prod')
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', '')
 
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
