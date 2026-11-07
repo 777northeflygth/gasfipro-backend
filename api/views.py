@@ -1,4 +1,5 @@
 # api/views.py
+
 import os
 # ✅ CLAVE: Permitir que Google devuelva los scopes en distinto orden o con nombres extendidos
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
@@ -12,7 +13,8 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import Booking
 from .serializers import BookingSerializer
-import random
+import secrets  # ✅ NUEVO: Reemplaza a 'random' para seguridad
+import logging   # ✅ NUEVO: Para logs seguros
 
 # ✅ Imports para Google Calendar
 from allauth.socialaccount.models import SocialToken
@@ -30,6 +32,8 @@ from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
+# Configurar logger
+logger = logging.getLogger(__name__)
 
 class BookingViewSet(viewsets.ModelViewSet):
     """
@@ -54,7 +58,8 @@ class BookingViewSet(viewsets.ModelViewSet):
     def _generate_unique_boleta(self):
         """Genera una boleta de 16 dígitos que no exista en la base de datos."""
         while True:
-            boleta = ''.join(str(random.randint(0, 9)) for _ in range(16))
+            # ✅ CORRECCIÓN SONARCLOUD: Usar secrets en lugar de random
+            boleta = ''.join(secrets.choice('0123456789') for _ in range(16))
             if not Booking.objects.filter(boleta=boleta).exists():
                 return boleta
 
@@ -74,7 +79,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             ).first()
 
             if not social_token:
-                print("No se encontró token de Google para este usuario.")
+                logger.warning("No se encontró token de Google para este usuario.")
                 return
 
             # Configuramos las credenciales de Google
@@ -117,10 +122,12 @@ class BookingViewSet(viewsets.ModelViewSet):
 
             # Insertar el evento
             created_event = service.events().insert(calendarId='primary', body=event).execute()
-            print(f"✅ Evento creado en Google Calendar: {created_event.get('htmlLink')}")
+            # ✅ CORRECCIÓN SONARCLOUD: Usar logger.info en lugar de print
+            logger.info(f"✅ Evento creado en Google Calendar: {created_event.get('htmlLink')}")
 
         except Exception as e:
-            print(f"❌ Error al crear evento en Google Calendar: {e}")
+            # ✅ CORRECCIÓN SONARCLOUD: Usar logger.error en lugar de print
+            logger.error(f"❌ Error al crear evento en Google Calendar: {e}")
 
     # ----- ACCIONES PERSONALIZADAS -----
 
@@ -328,7 +335,6 @@ class BookingViewSet(viewsets.ModelViewSet):
             'evidencia': booking.evidencia.url if booking.evidencia else None,
         }
 
-
 # ============================================================
 # ✅ NUEVO - Vista personalizada para Login con Google (Auth Code)
 # ============================================================
@@ -396,5 +402,5 @@ class GoogleLogin(APIView):
             })
 
         except Exception as e:
-            print(f"❌ Error en login manual de Google: {e}")
+            logger.error(f"❌ Error en login manual de Google: {e}")
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
